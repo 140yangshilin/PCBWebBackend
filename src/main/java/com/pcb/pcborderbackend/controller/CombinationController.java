@@ -15,34 +15,25 @@ public class CombinationController {
     @Autowired
     private CombinationService combinationService;
 
-    /**
-     * 前端传入字段值列表，后端进行笛卡尔积生成所有合法组合并保存
-     * 请求格式：{
-     *   "template_id": "xxx",
-     *   "字段A": ["a1", "a2"],
-     *   "字段B": ["b1"],
-     *   "字段C": ["c1", "c2"]
-     * }
-     */
+
     @PostMapping("/generate")
     public ResponseEntity<?> generateCombinations(@RequestBody Map<String, Object> request) {
         try {
-            combinationService.generateAndSaveCombinations(request);
-            return ResponseEntity.ok("组合生成并保存成功");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            combinationService.generateAndSaveCombinationsById(request);
+            return ResponseEntity.ok("组合生成成功");
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("服务端错误: " + e.getMessage());
+            return ResponseEntity.status(500).body("生成失败：" + e.getMessage());
         }
     }
 
+
+
     @PostMapping("/getById")
     public ResponseEntity<?> getCombinationById(@RequestBody Map<String, String> request) {
-        String templateName = request.get("templateName");
+        String templateId = request.get("template_id");
         String id = request.get("id");
-
         try {
-            Map<String, Object> rule = combinationService.getCombinationById(templateName, id);
+            Map<String, Object> rule = combinationService.getCombinationById(templateId, id);
             return ResponseEntity.ok(rule);
         } catch (Exception e) {
             return ResponseEntity.status(500).body("查询失败: " + e.getMessage());
@@ -50,49 +41,30 @@ public class CombinationController {
     }
 
 
-    /**
-     * 查询接口：根据部分字段值，返回其余字段的合法选项合集
-     * 请求体要求包含 template_name 和若干字段键值对
-     */
+
     @PostMapping("/query")
-    public ResponseEntity<?> queryCombinations(@RequestBody Map<String, Object> request) {
+    public ResponseEntity<?> queryCombinations(@RequestBody Map<String, Object> request,
+                                               @RequestParam(value = "lang", defaultValue = "zh") String lang) {
         try {
-            Map<String, Object> result = combinationService.queryValidOptions(request);
-            return ResponseEntity.ok(result);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.ok(combinationService.queryValidOptionsById(request, lang));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("查询失败: " + e.getMessage());
+            return ResponseEntity.badRequest().body("查询失败: " + e.getMessage());
         }
     }
 
 
-    /**
-     * 删除某个组合规则（根据集合名和 _id）
-     */
-    @DeleteMapping("/delete/{templateName}/{id}")
-    public ResponseEntity<?> deleteCombinationById(
-            @PathVariable("templateName") String templateName,
-            @PathVariable("id") String id
-    ) {
+
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteCombination(@RequestBody Map<String, Object> request) {
         try {
-            combinationService.deleteCombinationById(templateName, id);
-            return ResponseEntity.ok("规则已删除");
+            combinationService.deleteCombinationByFields(request);
+            return ResponseEntity.ok("组合规则已删除（中英文）");
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("删除失败: " + e.getMessage());
+            return ResponseEntity.badRequest().body("删除失败: " + e.getMessage());
         }
     }
 
-    /**
-     * 删除某个组合规则（根据集合名和组合）
-     */
-    @DeleteMapping("/delete-by-combination")
-    public ResponseEntity<?> deleteCombinationsByFields(@RequestBody List<Map<String, Object>> combinationList) {
-        try {
-            combinationService.deleteCombinationsByFieldList(combinationList);
-            return ResponseEntity.ok("批量规则已删除");
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("删除失败: " + e.getMessage());
-        }
-    }
+
+
 }

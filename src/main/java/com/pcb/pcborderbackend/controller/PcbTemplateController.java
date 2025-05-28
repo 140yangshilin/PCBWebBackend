@@ -1,6 +1,7 @@
 package com.pcb.pcborderbackend.controller;
 
 import com.pcb.pcborderbackend.model.PcbTemplate;
+import com.pcb.pcborderbackend.service.PcbTemplateI18nService;
 import com.pcb.pcborderbackend.service.PcbTemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -17,6 +18,9 @@ public class PcbTemplateController {
     private PcbTemplateService templateService;
     @Autowired
     private MongoTemplate mongoTemplate;
+    @Autowired
+    private PcbTemplateI18nService i18nService;
+
 
 
     @PostMapping("/create")
@@ -30,19 +34,31 @@ public class PcbTemplateController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<?> getAllTemplates() {
-        System.out.println("request for getAllTemplates");
+    public ResponseEntity<?> getAllTemplates(@RequestParam(value = "lang", defaultValue = "zh") String lang) {
+        if ("en".equalsIgnoreCase(lang)) {
+            return ResponseEntity.ok(i18nService.getAllConvertedEnglishTemplates());
+        }
         return ResponseEntity.ok(templateService.getAll());
     }
 
 
+
     @GetMapping("/{id}")
-    public ResponseEntity<PcbTemplate> getTemplate(@PathVariable String id) {
-        System.out.println("request for getTemplate by id and id is "+id);
+    public ResponseEntity<?> getTemplate(@PathVariable String id,
+                                         @RequestParam(value = "lang", defaultValue = "zh") String lang) {
+        System.out.println("request for getTemplate by id = " + id + ", lang = " + lang);
+
+        if ("en".equalsIgnoreCase(lang)) {
+            return i18nService.getConvertedEnglishTemplate(id)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        }
+
         return templateService.getById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+
 
     @PutMapping("/update")
     public ResponseEntity<?> updateTemplate(@RequestBody PcbTemplate updated) {

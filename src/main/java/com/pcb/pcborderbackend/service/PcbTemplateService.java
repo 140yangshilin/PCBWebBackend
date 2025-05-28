@@ -1,6 +1,7 @@
 package com.pcb.pcborderbackend.service;
 
 import com.pcb.pcborderbackend.model.PcbTemplate;
+import com.pcb.pcborderbackend.repository.PcbTemplateI18nRepository;
 import com.pcb.pcborderbackend.repository.PcbTemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,6 +14,8 @@ public class PcbTemplateService {
 
     @Autowired
     private PcbTemplateRepository repository;
+    @Autowired
+    private PcbTemplateI18nRepository i18nRepository;
 
     // 创建
     public PcbTemplate create(PcbTemplate template) {
@@ -87,11 +90,22 @@ public class PcbTemplateService {
     }
 
     public boolean deleteById(String id) {
-        if (!repository.existsById(id)) {
+        boolean exists = repository.existsById(id);
+        boolean i18nExists = i18nRepository.existsById(id);
+
+        if (!exists && !i18nExists) {
             return false;
         }
-        repository.deleteById(id);
+
+        if (exists) {
+            repository.deleteById(id);
+        }
+        if (i18nExists) {
+            i18nRepository.deleteById(id);
+        }
+
         return true;
     }
+
 
 }

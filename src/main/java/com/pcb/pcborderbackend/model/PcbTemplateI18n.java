@@ -7,15 +7,15 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Document("pcb_templates")
+@Document("pcb_templates_i18n")
 @Data
-public class PcbTemplate {
+public class PcbTemplateI18n {
     @Id
     private String id;
 
-    private String name; // 模板名称
+    private String nameZh;
+    private String nameEn;
     private List<Category> categories;
-
     private LocalDateTime createdAt;
 
     @Data
@@ -25,8 +25,10 @@ public class PcbTemplate {
 
     @Data
     public static class Field {
-        private String key;
-        private String des;
+        private String keyZh;
+        private String keyEn;
+        private String desZh;
+        private String desEn;
         private String pic;
         private String type;
         private List<Option> options;
@@ -36,8 +38,10 @@ public class PcbTemplate {
 
     @Data
     public static class Option {
-        private String name;
-        private String des;
+        private String nameZh;
+        private String nameEn;
+        private String desZh;
+        private String desEn;
         private String pic;
     }
 }
